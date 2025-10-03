@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Happy Birthday ❤️ — Countdown</title>
+<style>
+  :root{--bg:#0f1724;--card:#111827;--accent:#ff7aa2;--muted:#9ca3af}
+  *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+  body{margin:0;min-height:100vh;background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(255,122,162,0.08), transparent 8%),
+    radial-gradient(900px 400px at 90% 90%, rgba(102,126,234,0.06), transparent 6%),
+    var(--bg);color:#e6eef8;display:flex;align-items:center;justify-content:center;padding:24px}
+  .wrap{max-width:980px;width:100%;display:grid;grid-template-columns:1fr 420px;gap:24px;align-items:start}
+  @media (max-width:880px){.wrap{grid-template-columns:1fr;}}
+  .left{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:28px;border-radius:14px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+  h1{margin:0 0 6px;font-size:28px;letter-spacing:-0.5px}
+  p.lead{margin:0;color:var(--muted);font-size:15px}
+  .count{display:flex;gap:12px;margin-top:18px}
+  .count .unit{background:rgba(255,255,255,0.03);padding:16px;border-radius:10px;min-width:88px;text-align:center}
+  .count .num{font-size:28px;font-weight:700}
+  .count .label{font-size:12px;color:var(--muted);margin-top:4px}
+  .gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:18px}
+  .gallery img{width:100%;height:120px;object-fit:cover;border-radius:10px;display:block}
+  .right{padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));border-radius:14px;box-shadow:0 8px 30px rgba(2,6,23,0.6);text-align:center}
+  .bigcake{font-size:60px;margin:0}
+  .message{margin-top:8px;color:var(--muted)}
+  .btns{display:flex;gap:10px;justify-content:center;margin-top:18px}
+  .btn{background:var(--accent);color:#0b1220;padding:10px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer}
+  .small{font-size:13px;color:var(--muted);margin-top:12px}
+  footer{margin-top:16px;color:var(--muted);font-size:13px;text-align:center}
+  .slideshow{position:relative;overflow:hidden;border-radius:12px;height:320px;margin-top:18px}
+  .slideshow img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity 1s;opacity:0}
+  .slideshow img.active{opacity:1}
+  iframe.spotify{margin-top:20px;border-radius:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="left">
+    <h1>Happy Birthday, Babe! 🎉</h1>
+    <p class="lead">Counting down to the 7 — here's a little page I made for you.</p>
+
+    <div class="slideshow" id="slideshow">
+      <img src="kiss.jpg" alt="kiss" class="active">
+      <img src="mirror.jpg" alt="mirror">
+      <img src="puppy.jpg" alt="puppy">
+    </div>
+
+    <div class="count" id="count">
+      <div class="unit"><div class="num" id="days">--</div><div class="label">Days</div></div>
+      <div class="unit"><div class="num" id="hours">--</div><div class="label">Hours</div></div>
+      <div class="unit"><div class="num" id="minutes">--</div><div class="label">Minutes</div></div>
+      <div class="unit"><div class="num" id="seconds">--</div><div class="label">Seconds</div></div>
+    </div>
+
+    <p class="small">Not the 7th? Click "Edit Target" and type a date (e.g. 2025-10-07 18:00) or just a day-of-month like <code>7</code>.</p>
+  </div>
+
+  <div class="right">
+    <div class="bigcake">🎂</div>
+    <p class="message" id="message">Your celebration is coming soon — get ready!</p>
+
+    <div class="btns">
+      <button class="btn" id="editBtn">Edit Target</button>
+      <button class="btn" id="shareBtn">Share 🎁</button>
+    </div>
+
+    <div style="margin-top:14px">
+      <label style="display:block;font-size:13px;color:var(--muted);margin-bottom:6px">Current target:</label>
+      <div id="targetDisplay" style="font-weight:700"></div>
+    </div>
+
+    <!-- Spotify Embed -->
+    <iframe class="spotify" src="https://open.spotify.com/embed/playlist/6uA0jrl4NlkG95kVMZzlAS?utm_source=generator"
+      width="100%" height="380" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+    </iframe>
+
+    <footer>Made with ❤️ — save this file and open it in a browser.</footer>
+  </div>
+</div>
+
+<script>
+(function(){
+  function nextDayOfMonth(day) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    let target = new Date(year, month, day, 20, 0, 0);
+    if (target <= now) target = new Date(year, month + 1, day, 20, 0, 0);
+    return target;
+  }
+  function parseTarget(input) {
+    input = input.trim();
+    if (!input) return null;
+    if (/^\d{1,2}$/.test(input)) {
+      const d = parseInt(input,10);
+      if (d>=1 && d<=31) return nextDayOfMonth(d);
+    }
+    const parsed = new Date(input);
+    if (!isNaN(parsed)) return parsed;
+    return null;
+  }
+  const storageKey = "birthday_target";
+  let target = null;
+  const stored = localStorage.getItem(storageKey);
+  if (stored) {
+    const t = new Date(stored);
+    if (!isNaN(t)) target = t;
+  }
+  if (!target) target = nextDayOfMonth(7);
+  const daysEl = document.getElementById('days');
+  const hoursEl = document.getElementById('hours');
+  const minutesEl = document.getElementById('minutes');
+  const secondsEl = document.getElementById('seconds');
+  const messageEl = document.getElementById('message');
+  const targetDisplay = document.getElementById('targetDisplay');
+  function updateDisplayTarget() {
+    targetDisplay.textContent = target.toLocaleString();
+  }
+  function tick() {
+    const now = new Date();
+    const diff = target - now;
+    if (diff <= 0) {
+      daysEl.textContent = '0';
+      hoursEl.textContent = '0';
+      minutesEl.textContent = '0';
+      secondsEl.textContent = '0';
+      messageEl.textContent = "🎉 It's here! Happy Birthday!";
+      return;
+    }
+    const s = Math.floor(diff/1000);
+    const days = Math.floor(s / (3600*24));
+    const hours = Math.floor((s % (3600*24)) / 3600);
+    const minutes = Math.floor((s % 3600) / 60);
+    const seconds = s % 60;
+    daysEl.textContent = days;
+    hoursEl.textContent = String(hours).padStart(2,'0');
+    minutesEl.textContent = String(minutes).padStart(2,'0');
+    secondsEl.textContent = String(seconds).padStart(2,'0');
+  }
+  updateDisplayTarget();
+  tick();
+  setInterval(tick, 1000);
+  document.getElementById('editBtn').addEventListener('click', function(){
+    const inp = prompt("Enter a date/time (e.g. 2025-10-07 18:00) or just a day number (e.g. 7). Leave empty to cancel.");
+    if (!inp) return;
+    const parsed = parseTarget(inp);
+    if (!parsed) { alert("Couldn't parse that date. Try a full date or a day number like 7."); return; }
+    target = parsed;
+    localStorage.setItem(storageKey, target.toString());
+    updateDisplayTarget();
+    tick();
+  });
+  document.getElementById('shareBtn').addEventListener('click', function(){
+    const text = "Open this birthday countdown: " + window.location.href + " (target: " + target.toLocaleString() + ")";
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(()=>alert("Share link copied to clipboard!"));
+    } else {
+      prompt("Copy this link:", text);
+    }
+  });
+  const slides = document.querySelectorAll('#slideshow img');
+  let idx = 0;
+  setInterval(()=> {
+    slides[idx].classList.remove('active');
+    idx = (idx+1) % slides.length;
+    slides[idx].classList.add('active');
+  }, 3500);
+})();
+</script>
+</body>
+</html>
